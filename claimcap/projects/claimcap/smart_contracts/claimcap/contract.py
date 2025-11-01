@@ -1,70 +1,65 @@
-from algopy import ARC4Contract, abimethod, String, GlobalState, Txn, UInt64, Global, Box
-import time
+from algopy import ARC4Contract, UInt64, String, Global, Txn, Account, BoxMap
+from algopy.arc4 import abimethod
+
 
 class ClaimCap(ARC4Contract):
-    # NFT tracking: wallet -> timestamp of purchase
-    owners = GlobalState(String, UInt64)
-    claim_count = GlobalState(UInt64)
-    MAX_CLAIMS = 100
-    PRICE = 100000  # 0.1 ALGO in microAlgos (100000 microAlgos)
+    def __init__(self) -> None:
+        self.owners = BoxMap(Account, UInt64)  # wallet -> timestamp
+        self.claim_count = UInt64(0)    # counter
 
-    HOLD_PERIOD = 30 * 24 * 60 * 60  # 30 days (in seconds)
+        self.MAX_CLAIMS = UInt64(100)
+        self.PRICE = UInt64(100000)
+        self.HOLD_PERIOD = UInt64(30 * 24 * 60 * 60)
 
     @abimethod()
-    def buy_nft(self) -> String:
+    def buy_nft(self, amount:UInt64) -> String:
         sender = Txn.sender
-        amount = Txn.amount
 
-        # Require payment
         if amount < self.PRICE:
-            return "❌ Need to pay 0.1 ALGO to buy NFT!"
+            return String(" Need to pay 0.1 ALGO to buy NFT!")
 
-        # Check if already owns
-        if self.owners.get(sender):
-            return "❌ You already own an NFT!"
+        if self.owners[sender] != UInt64(0):
+            return String(" You already own an NFT!")
 
-        # Check limit
-        count = self.claim_count.get() or 0
+        count = self.claim_count
         if count >= self.MAX_CLAIMS:
-            return "❌ All NFTs sold!"
+            return String(" All NFTs sold!")
 
-        # Record buyer & time
         self.owners[sender] = Global.latest_timestamp
-        self.claim_count.set(count + 1)
-        return f"✅ NFT purchased! You must hold it for 30 days. ({count + 1}/100)"
+        self.claim_count += 1
+
+        
+        return String(" NFT purchased! You must hold it for 30 days.")
 
     @abimethod()
-    def sell_nft(self, buyer: String) -> String:
+    def sell_nft(self, buyer: Account) -> String:
         sender = Txn.sender
-        purchase_time = self.owners.get(sender)
+        buyer_bytes = buyer
+        purchase_time = self.owners[sender]
 
-        if purchase_time == None:
-            return "❌ You don't own an NFT."
+        if purchase_time == UInt64(0):
+            return String(" You don't own an NFT.")
 
-        # Check if 30 days passed
         now = Global.latest_timestamp
         if now - purchase_time < self.HOLD_PERIOD:
-            return "❌ Hold period (30 days) not finished yet!"
+            return String(" Hold period (30 days) not finished yet!")
 
-        # Transfer ownership
-        self.owners[buyer] = now
-        self.owners.delete(sender)
-        return f"✅ NFT sold to {buyer}!"
+        self.owners[buyer_bytes] = now
+        self.owners[sender] = UInt64(0)
+        return String("NFT sold successfully!")
 
     @abimethod()
     def check_hold_days(self) -> UInt64:
         sender = Txn.sender
-        purchase_time = self.owners.get(sender)
-        if purchase_time == None:
-            return 0
-        now = Global.latest_timestamp
-        elapsed = now - purchase_time
-        return elapsed
+        purchase_time = self.owners[sender]
+        if purchase_time == UInt64(0):
+            return UInt64(0)
+        return purchase_time
 
     @abimethod()
     def get_claim_count(self) -> UInt64:
-        return self.claim_count.get() or 0
+        return self.claim_count
 
     @abimethod()
     def hello(self, name: String) -> String:
-        return "Hello " + name + "! Welcome to ClaimCap Market 🎉"
+        return String("Hello {name}! Welcome to ClaimCap Market ")
