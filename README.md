@@ -31,16 +31,6 @@ ClaimCap enables users to:
 
 ---
 
-## 🧱 Smart Contract Code
-
-Below is the core logic for the ClaimCap Algorand smart contract.
-
-```python
-//paste your code
-```
-
----
-
 ## 🌐 Deployed Smart Contract Link
 
 👉 [View Contract on Algorand Explorer](XXX)
