@@ -31,6 +31,16 @@ ClaimCap enables users to:
 
 ---
 
+## 🧱 Smart Contract Code
+
+Below is the core logic for the ClaimCap Algorand smart contract.
+
+```python
+//paste your code
+```
+
+---
+
 ## 🌐 Deployed Smart Contract Link
 
 👉 [View Contract on Algorand Explorer](XXX)
@@ -64,7 +74,7 @@ algokit deploy
 
 | Method              | Type  | Description                          |
 | ------------------- | ----- | ------------------------------------ |
-| `buy_nft()`         | write | Purchase NFT (requires ALGO payment) |
+| `buy_nft(amount)`   | write | Purchase NFT (requires ALGO payment) |
 | `sell_nft(buyer)`   | write | Transfer NFT after hold period       |
 | `check_hold_days()` | view  | Returns how long user has held NFT   |
 | `get_claim_count()` | view  | Returns total NFTs sold              |
@@ -77,4 +87,15 @@ algokit deploy
 * **Language:** Python (AlgoPy ARC4)
 * **Framework:** Algokit / Poetry
 * **Blockchain:** Algorand
-* **Compiler:** Pu
+* **Compiler:** Puyapy v6+
+* **Storage:** GlobalState + BoxMapping
+
+---
+
+## 🧑‍💻 Developer Notes
+
+This contract is meant for **educational and demonstration purposes**, showing how smart contracts can enforce time-based asset restrictions and controlled ownership transfers.
+
+Feel free to fork, improve, and expand this project into a full-fledged NFT marketplace on Algorand.
+
+---
